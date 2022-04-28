@@ -2,7 +2,7 @@
 d3d12, iocp를 이용한 게임 제작
 
 각 폴더에는 설명문서, 실행파일, 프로젝트 파일이 있습니다.
-br
+<br>
 # 링크
 #### 군대에서 공부했던 기록1 https://github.com/Juyeong11/algorithm-study
 #### 군대에서 공부했던 기록2 https://github.com/Juyeong11/programing-study
