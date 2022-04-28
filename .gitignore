@@ -26,7 +26,10 @@
 *.a
 *.lib
 
-# Executables
-*.exe
-*.out
-*.app
+# Build results
+[Dd]ebug/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+.vs/
