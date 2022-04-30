@@ -50,7 +50,7 @@ int PathFinder::find_path(GameObject* finder, const GameObject* const target) {
 	auto pre_time = std::chrono::system_clock::now();
 	int step = 0;
 	now->g = 0;
-	while (!Open.empty())//|| std::chrono::milliseconds(1) < std::chrono::system_clock::now() - pre_time) {
+	while (!Open.empty())
 	{
 		auto pass = max_element(Open.cbegin(), Open.cend(), [&](Node* rhs, Node* lhs) {
 			return rhs->f > rhs->f;
@@ -58,12 +58,10 @@ int PathFinder::find_path(GameObject* finder, const GameObject* const target) {
 		now = *pass;
 		Open.erase(pass);
 		step++;
-		if (*now == end || step > MAX_STEP) {
-			//std::cout << finder->index << "가 경로 찾음\n";
+		if (*now == end || step > MAX_STEP) { // 경로를 찾거나 너무 많은 시간을 쓰면 종료
 			break;
 		}
 		Close.emplace_back(now->y, now->x);// 닫힌 경로에 추가하고
-
 
 		int cur_y = now->y;
 		int cur_x = now->x;
@@ -89,9 +87,7 @@ int PathFinder::find_path(GameObject* finder, const GameObject* const target) {
 			n->f = n->g + n->h;
 			n->pre = now;
 
-
 			Open.push_back(n);
-
 		}
 	}
 	Close.clear();
@@ -101,10 +97,9 @@ int PathFinder::find_path(GameObject* finder, const GameObject* const target) {
 		reinterpret_cast<Npc*>(finder)->target_id = -1;
 		return rand() % 4;
 	}
-	//std::cout << now->x << ", " << now->y << std::endl;
+
 	while (now->pre->pre != nullptr) {
 		now = now->pre;
-		//std::cout << now->x << ", " << now->y << std::endl;
 	}
 
 	// 0 : up,  1: down, 2:left, 3:right

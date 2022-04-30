@@ -305,10 +305,10 @@ void Network::disconnect_client(int c_id)
 	}
 
 	DB->update_player_data(clients[c_id]);
-	clients[c_id]->state_lock.lock();
-	closesocket(reinterpret_cast<Client*>(clients[c_id])->socket);
 	clients[c_id]->state = ST_FREE;
-	clients[c_id]->state_lock.unlock();
+	//clients[c_id]->state_lock.lock();
+	closesocket(reinterpret_cast<Client*>(clients[c_id])->socket);
+	//clients[c_id]->state_lock.unlock();
 }
 
 int Network::get_new_id()
@@ -428,9 +428,9 @@ void Network::do_timer_event_act(const timer_event& ev) {
 		int npc_id = ev.obj_id;
 		clients[npc_id]->hp = clients[npc_id]->maxhp;
 
-		clients[npc_id]->state_lock.lock();
+		//clients[npc_id]->state_lock.lock();
 		clients[npc_id]->state = ST_INGAME;
-		clients[npc_id]->state_lock.unlock();
+		//clients[npc_id]->state_lock.unlock();
 
 		Client& cl = *reinterpret_cast<Client*>(clients[npc_id]);
 		//다른 클라이언트에게 오브젝트가 스폰됨을 알림
@@ -512,9 +512,9 @@ void Network::do_timer_event_act(const timer_event& ev) {
 			t.start_time = std::chrono::system_clock::now() + std::chrono::seconds(10);
 			timer_queue.push(t);
 
-			cl->state_lock.lock();
+			//cl->state_lock.lock();
 			cl->state = ST_ACCEPT;
-			cl->state_lock.unlock();
+			//cl->state_lock.unlock();
 
 			for (auto i : c_vl) {
 				if (false == is_player(i))continue;
@@ -798,9 +798,9 @@ void Network::process_packet(int client_id, unsigned char* p)
 		}
 		//send_login_ok(client_id);
 
-		cl.state_lock.lock();
+		//cl.state_lock.lock();
 		cl.state = ST_INGAME;
-		cl.state_lock.unlock();
+		//cl.state_lock.unlock();
 
 		//다른 클라이언트에게 새로운 클라이언트가 들어옴을 알림
 		for (int i = 0; i < MAX_USER; ++i)
@@ -1078,9 +1078,9 @@ void Network::process_packet(int client_id, unsigned char* p)
 			if (clients[i]->hp <= 0) {
 				reinterpret_cast<Npc*>(clients[i])->target_id = -1;
 				reinterpret_cast<movable_Npc*>(clients[i])->is_move = false;
-				clients[i]->state_lock.lock();
+				//clients[i]->state_lock.lock();
 				clients[i]->state = ST_FREE;
-				clients[i]->state_lock.unlock();
+				//clients[i]->state_lock.unlock();
 				//어그로 로밍 몬스터는 2배의 경험치,
 				if (is_movable_monster(i)) {
 					int e = clients[i]->level * clients[i]->level * 80;

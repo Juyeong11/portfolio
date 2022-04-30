@@ -56,7 +56,7 @@ public:
 	int maxexp;
 	int power;
 	//volatile«ÿ¡‡æﬂ «—¥Ÿ.
-	volatile STATE state;
+	volatile std::atomic<STATE> state;
 	std::mutex state_lock;
 
 	int		last_move_time;
