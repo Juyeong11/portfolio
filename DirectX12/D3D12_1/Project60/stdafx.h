@@ -74,7 +74,7 @@ inline bool IsEqual(float fA, float fB) { return ::IsZero(fA - fB); }
 
 inline float InverseSqrt(float fValue) { return 1.0f / sqrtf(fValue); }
 
-inline void Swap(float* pfS, float* pfT) { std::swap(pfS, pfT); }//???이건 왜 만드신걸까?
+inline void Swap(float* pfS, float* pfT) { std::swap(pfS, pfT); }
 
 //3차원 벡터의 연산
 namespace Vector3

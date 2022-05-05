@@ -68,20 +68,15 @@ struct VS_NORMAL_OUTPUT
 VS_NORMAL_OUTPUT VSNormal(VS_NORMAL_INPUT input)
 {
     VS_NORMAL_OUTPUT vout = (VS_NORMAL_OUTPUT) 0.0f;
-
-	// Fetch the material data.
-   // MaterialData matData = gMaterialData[gMaterialIndex];
 	
     // Transform to world space.
     float4 posW = mul(float4(input.PosL, 1.0f), gmtxGameObject);
     vout.PosW = posW.xyz;
 
-    // Assumes nonuniform scaling; otherwise, need to use inverse-transpose of world matrix.
     vout.NormalW = mul(input.NormalL, (float3x3) gmtxGameObject);
 	
     vout.TangentW = float3(input.TexC,1);
-
-    // Transform to homogeneous clip space.
+    
     vout.PosH = mul(mul(posW, gmtxView), gmtxProjection);
 	
     for (int i = 0; i < MAX_LIGHTS; i++)
@@ -89,9 +84,7 @@ VS_NORMAL_OUTPUT VSNormal(VS_NORMAL_INPUT input)
         if (gcbToLightSpaces[i].f4Position.w != 0.0f)
             vout.uvs[i] = mul(posW, gcbToLightSpaces[i].mtxToTexture);// 그림자 맵을 장면에 투영하기 위해 투영 텍스쳐 좌표를 만든다.
     }
-	// Output vertex attributes for interpolation across triangle.
-    //float4 texC = mul(float4(input.TexC, 0.0f, 1.0f), gTexTransform);
-    //vout.TexC = mul(texC, matData.MatTransform).xy;
+
     return vout;
 }
 

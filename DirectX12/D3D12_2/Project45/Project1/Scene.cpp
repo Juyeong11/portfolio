@@ -650,11 +650,7 @@ void CSceneTwo::AnimateObjects(float fTimeElapsed)
 		XMStoreFloat3(&m_pLights->m_pLights[1].m_xmf3Position, XMVector3TransformNormal(XMLoadFloat3(&m_pLights->m_pLights[1].m_xmf3Position), xmmtxRotation));
 		m_pLights->m_pLights[1].m_xmf3Direction = Vector3::ScalarProduct(m_pLights->m_pLights[1].m_xmf3Position, -1);
 	
-		m_fLightRotationAngle += fTimeElapsed;
-		xmmtxRotation = XMMatrixRotationY(fTimeElapsed * 0.5f);
-		XMStoreFloat3(&m_pLights->m_pLights[2].m_xmf3Position, XMVector3TransformNormal(XMLoadFloat3(&m_pLights->m_pLights[2].m_xmf3Position), xmmtxRotation));
-		m_pLights->m_pLights[2].m_xmf3Direction = Vector3::ScalarProduct(m_pLights->m_pLights[2].m_xmf3Position, -1);
-
+	
 	}
 }
 
@@ -664,7 +660,7 @@ void CSceneTwo::BuildLightsAndMaterials() {
 
 	m_pLights->m_xmf4GlobalAmbient = XMFLOAT4(0.1f, 0.1f, 0.1f, 1.0f);
 
-	m_pLights->m_pLights[0].m_bEnable = false;
+	m_pLights->m_pLights[0].m_bEnable = true;
 	m_pLights->m_pLights[0].m_nType = DIRECTIONAL_LIGHT;
 	m_pLights->m_pLights[0].m_fRange = 2000.0f;
 	m_pLights->m_pLights[0].m_xmf4Ambient = XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f);
@@ -686,7 +682,7 @@ void CSceneTwo::BuildLightsAndMaterials() {
 	m_pLights->m_pLights[1].m_fPhi = (float)cos(XMConvertToRadians(60.0f));
 	m_pLights->m_pLights[1].m_fTheta = (float)cos(XMConvertToRadians(30.0f));
 
-	m_pLights->m_pLights[2].m_bEnable = true;
+	m_pLights->m_pLights[2].m_bEnable = false;
 	m_pLights->m_pLights[2].m_nType = SPOT_LIGHT;
 	m_pLights->m_pLights[2].m_fRange = 1000.0f;
 	m_pLights->m_pLights[2].m_xmf4Ambient = XMFLOAT4(0.1f, 0.1f, 0.1f, 1.0f);

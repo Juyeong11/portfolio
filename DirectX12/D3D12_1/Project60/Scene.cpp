@@ -223,10 +223,8 @@ void CScene::ReleaseUploadBuffers()
 	if (m_pTerrain) m_pTerrain->ReleaseUploadBuffers();
 }
 
-CGameObject* CScene::PickObjectPointedByCursor(int xClient, int yClient, CCamera* pCamera)
+CGameObject* CScene::PickObjectPointedByCursor(float xClient, float yClient, CCamera* pCamera)
 {
-
-
 	XMFLOAT3 xmf3PickPosition;
 	xmf3PickPosition.x = (((2.0f * xClient) / pCamera->m_d3dViewport.Width) - 1) / pCamera->m_xmf4x4Projection._11;
 	xmf3PickPosition.y = -(((2.0f * yClient) / pCamera->m_d3dViewport.Height) - 1) / pCamera->m_xmf4x4Projection._22;
@@ -269,6 +267,7 @@ bool CScene::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM wPar
 		switch (wParam)
 		{
 		case 'Z':
+		case 'z':
 		{
 			CGameObject* pNearObj = nullptr;
 			for (int i = -2; i < 3; ++i) {
@@ -277,7 +276,7 @@ bool CScene::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM wPar
 					if (pNearObj && pNearObj->m_bActive) {
 						m_pLights[0].m_xmf3Position = pNearObj->GetPosition();
 
-						((CAirplanePlayer*)m_pPlayer)->FireBullet(pNearObj);
+						(m_pPlayer)->FireBullet(pNearObj);
 						break;
 					}
 
@@ -285,11 +284,10 @@ bool CScene::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM wPar
 				if (pNearObj)
 					break;
 			}
-
-
 		}
 		break;
 		case 'X':
+		case 'x':
 		{
 			XMFLOAT3 xmf3PlayerPos = m_pPlayer->GetPosition();
 			XMFLOAT3 xmf3TarGetPos;
@@ -308,10 +306,10 @@ bool CScene::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM wPar
 			}
 
 			if (pNearObj) {
-				((CAirplanePlayer*)m_pPlayer)->FireBullet(pNearObj);
+				(m_pPlayer)->FireBullet(pNearObj);
 			}
 			else {
-				((CAirplanePlayer*)m_pPlayer)->FireBullet(NULL);
+				(m_pPlayer)->FireBullet(NULL);
 			}
 			break;
 

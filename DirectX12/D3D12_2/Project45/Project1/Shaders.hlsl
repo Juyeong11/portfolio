@@ -173,11 +173,11 @@ VS_TERRAIN_OUTPUT VSTerrain(VS_TERRAIN_INPUT input)
 float CalculateTessFactor(float3 p)
 {
     float fDistToCamera = distance(p, gvCameraPosition);
-    float s = saturate((fDistToCamera) / (200.0f));//카메라 offset만큼 빼주자
+    float s = saturate((fDistToCamera) / (200.0f));
 
     return (lerp(64.0f, 1.0f, s));
 }
-HS_TERRAIN_CONSTANT_OUTPUT ConstantHS(InputPatch<VS_TERRAIN_OUTPUT, 25> input)// uint nPatchID : SV_PrimitiveID)
+HS_TERRAIN_CONSTANT_OUTPUT ConstantHS(InputPatch<VS_TERRAIN_OUTPUT, 25> input)
 {
     HS_TERRAIN_CONSTANT_OUTPUT output;
     
@@ -187,6 +187,7 @@ HS_TERRAIN_CONSTANT_OUTPUT ConstantHS(InputPatch<VS_TERRAIN_OUTPUT, 25> input)//
     float3 e2 = 0.5f * (input[4].positionW + input[24].positionW);
     float3 e3 = 0.5f * (input[20].positionW + input[24].positionW);
     
+    //카메라와 거리에 따라 각 변을 쪼개는 개수를 정한다.
     output.fTessEdges[0] = CalculateTessFactor(e0);
     output.fTessEdges[1] = CalculateTessFactor(e1);
     output.fTessEdges[2] = CalculateTessFactor(e2);
@@ -196,6 +197,7 @@ HS_TERRAIN_CONSTANT_OUTPUT ConstantHS(InputPatch<VS_TERRAIN_OUTPUT, 25> input)//
     for (int i = 0; i < 25; ++i)
         f3Sum += input[i].positionW;
     float3 f3Center = f3Sum / 25.0f;
+    //수직, 수평으로 패치 내부의 테셀레이션 정도를 정한다.
     output.fTessInsides[0] = output.fTessInsides[1] = CalculateTessFactor(f3Center);
     return output;
 }
@@ -244,6 +246,7 @@ DS_TERRAIN_OUPUT DSTerrain(HS_TERRAIN_CONSTANT_OUTPUT input, float2 uv : SV_Doma
 {
     DS_TERRAIN_OUPUT output = (DS_TERRAIN_OUPUT) 0;
 
+    //테셀레이션된 정점의 위치가 uv정보로 나타나므로 실제 정점 위치를 찾아야한다.
     float uB[5], vB[5];
     BernsteinCoeffcient5x5(uv.x, uB);
     BernsteinCoeffcient5x5(uv.y, vB);
@@ -252,18 +255,18 @@ DS_TERRAIN_OUPUT DSTerrain(HS_TERRAIN_CONSTANT_OUTPUT input, float2 uv : SV_Doma
     output.uv0 = lerp(lerp(patch[0].uv0, patch[4].uv0, uv.x), lerp(patch[20].uv0, patch[24].uv0, uv.x), uv.y);
     output.uv1 = lerp(lerp(patch[0].uv1, patch[4].uv1, uv.x), lerp(patch[20].uv1, patch[24].uv1, uv.x), uv.y);
 
+    //실제 위치
     float3 p = CubicBezierSum5x5(patch, uB, vB);
-    //float3 v1 = lerp(patch[0].position, patch[4].position, uv.x);
-    //float3 v2 = lerp(patch[20].position, patch[24].position, uv.x);
-    //float3 p = lerp(v1, v2, uv.y);
 
     matrix mtxWorldViewProjection = mul(mul(gmtxGameObject, gmtxView), gmtxProjection);
     output.position = mul(float4(p, 1.0f), mtxWorldViewProjection);
 
+    //와이어 프레임일 경우테셀레이션 정도에 따라 색을 변화시키기 위해 전달한다.
     output.tessellation = float4(input.fTessEdges[0], input.fTessEdges[1], input.fTessEdges[2], input.fTessEdges[3]);
 
     return (output);
 }
+
 float4 PSTerrain(DS_TERRAIN_OUPUT input) : SV_TARGET
 {
     float4 cColor = float4(0.0f, 0.0f, 0.0f, 1.0f);

@@ -56,6 +56,9 @@ public:
 
 	void GenerateViewMatrix();
 	void GenerateViewMatrix(XMFLOAT3 xmf3Position, XMFLOAT3 xmf3LookAt, XMFLOAT3 xmf3Up);
+
+	//카메라가 여러번 회전하게 되면 실수연산의 오차 때문에 각 축이 직교하지 않을 수 있습니다.
+	//이 함수를 이용해 각 축이 서로 직교하도록 다시 행렬을 만들어 줍니다.
 	void RegenerateViewMatrix();
 
 	BoundingFrustum GetBoundingBox() { return m_xmFrustum; }
@@ -90,12 +93,12 @@ public:
 	float& GetYaw() { return(m_fYaw); }
 
 	void SetOffset(XMFLOAT3 xmf3Offset) { m_xmf3Offset = xmf3Offset; }
-//	void SetOffset(XMFLOAT3 xmf3Offset) { m_xmf3Offset = xmf3Offset; m_xmf3Position.x += xmf3Offset.x; m_xmf3Position.y += xmf3Offset.y; m_xmf3Position.z += xmf3Offset.z; }
 	XMFLOAT3& GetOffset() { return(m_xmf3Offset); }
 
+	//카메라를 회전을 좀 더 자연스럽게 하기 위해 카메라가 시간을 두고 플레이어를 따라오게 만들었습니다.
 	void SetTimeLag(float fTimeLag) { m_fTimeLag = fTimeLag; }
 	float GetTimeLag() { return(m_fTimeLag); }
-
+	
 	XMFLOAT4X4 GetViewMatrix() { return(m_xmf4x4View); }
 	XMFLOAT4X4 GetProjectionMatrix() { return(m_xmf4x4Projection); }
 	D3D12_VIEWPORT GetViewport() { return(m_d3dViewport); }

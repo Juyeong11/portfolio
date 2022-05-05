@@ -343,10 +343,10 @@ CGridMeshIlluminated::CGridMeshIlluminated(ID3D12Device* pd3dDevice, ID3D12Graph
 	float du = 1.0f / (n - 1);
 	float dv = 1.0f / (m - 1);
 	
-	for (int i = 0; i < m; ++i)
+	for (size_t i = 0; i < m; ++i)
 	{
 		float z = halfDepth - i * dz;
-		for (int j = 0; j < n; ++j)
+		for (size_t j = 0; j < n; ++j)
 		{
 			float x = -halfWidth + j * dx;
 
@@ -373,9 +373,9 @@ CGridMeshIlluminated::CGridMeshIlluminated(ID3D12Device* pd3dDevice, ID3D12Graph
 	m_nIndices = faceCount * 3;
 	// Iterate over each quad and compute indices.
 	int k = 0;
-	for (int i = 0; i < m - 1; ++i)
+	for (unsigned int i = 0; i < m - 1; ++i)
 	{
-		for (int j = 0; j < n - 1; ++j)
+		for (unsigned int j = 0; j < n - 1; ++j)
 		{
 			indices[k] = i * n + j;
 			indices[k + 1] = i * n + j + 1;
@@ -886,15 +886,13 @@ XMFLOAT3 CHeightMapImage::CubicBezierSum5x5(XMFLOAT3 patch[25], float u[5], floa
 
 float CHeightMapImage::GetHeight(float fx, float fz, int cxQuadsPerBlock, int czQuadsPerBlock)
 {
-	float height[4];
-
 
 	fx = (fx) / m_xmf3Scale.x;
 	fz = (fz) / m_xmf3Scale.z;
 
 
-	int xStart = (fx / cxQuadsPerBlock);
-	int zStart = (fz / czQuadsPerBlock);
+	int xStart = static_cast<int>(fx / cxQuadsPerBlock);
+	int zStart = static_cast<int>(fz / czQuadsPerBlock);
 	xStart *= cxQuadsPerBlock;
 	zStart *= czQuadsPerBlock;
 
@@ -915,7 +913,7 @@ float CHeightMapImage::GetHeight(float fx, float fz, int cxQuadsPerBlock, int cz
 	for (int i = 0; i < 5; ++i)
 		for (int j = 0; j < 5; ++j) {
 			fheight = (float)m_pHeightMapPixels[xStart + i * nIncrease + ((zStart + j * nIncrease) * m_nWidth)];
-			patch[i + 5 * j] = XMFLOAT3(xStart + i * nIncrease, fheight, zStart + j * nIncrease);
+			patch[i + 5 * j] = XMFLOAT3(static_cast<float>(xStart + i * nIncrease), fheight, static_cast<float>(zStart + j * nIncrease));
 		}
 	XMFLOAT3 pos = CubicBezierSum5x5(patch, u, v);
 
@@ -1299,7 +1297,7 @@ CSkullMesh::CSkullMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3d
 
 	std::vector<int> indices(3 * tcount);
 
-	for (int i = 0; i < tcount; ++i)
+	for (size_t i = 0; i < tcount; ++i)
 	{
 		fin >> indices[i * 3 + 0] >> indices[i * 3 + 1] >> indices[i * 3 + 2];
 	}

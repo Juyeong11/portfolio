@@ -86,6 +86,7 @@ public:
 	virtual void OnPrepareRender();
 	virtual void Render(ID3D12GraphicsCommandList *pd3dCommandList, CCamera *pCamera = NULL);
 
+	virtual void FireBullet(CGameObject* pSelectedObject) {};
 public:
 	bool	isCollision;
 	float fknockbackTime = 0.0f;
@@ -113,9 +114,7 @@ private:
 	virtual void Animate(float fTimeElapsed, XMFLOAT4X4 *pxmf4x4Parent = NULL);
 	virtual void Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera = NULL);
 
-	CGameObject* GetRocket() { 
-		return m_ppMissiles[1];
-	};//나중에 숫자 추가해서 8개 발사하자
+
 public:
 	virtual CCamera *ChangeCamera(DWORD nNewCameraMode, float fTimeElapsed);
 	virtual void OnPrepareRender();
@@ -124,7 +123,7 @@ public:
 	virtual void OnPlayerUpdateCallback(float fTimeElapsed);
 	virtual void OnCameraUpdateCallback(float fTimeElapsed);
 
-	void FireBullet(CGameObject* pSelectedObject);
+	virtual void FireBullet(CGameObject* pSelectedObject);
 };
 
 

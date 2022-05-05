@@ -235,10 +235,7 @@ void CBlurShader::BuildResource(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandL
 	pd3dDevice->CreateUnorderedAccessView(mBlurMap1, nullptr, &uavDesc, mBlur1CpuUav);
 }
 
-void CBlurShader::Execute(ID3D12GraphicsCommandList* pd3dCommandList,
-	ID3D12RootSignature* pd3dRootSignature,
-	ID3D12Resource* input,
-	int blurCount)
+void CBlurShader::Execute(ID3D12GraphicsCommandList* pd3dCommandList, ID3D12RootSignature* pd3dRootSignature, ID3D12Resource* input, int blurCount)
 {
 	int blurRadius = nWeight / 2;
 
@@ -266,9 +263,7 @@ void CBlurShader::Execute(ID3D12GraphicsCommandList* pd3dCommandList,
 	{
 		//가로
 		pd3dCommandList->SetPipelineState(m_phorzPipelineState);
-
 		pd3dCommandList->SetComputeRootDescriptorTable(0, mBlur0GpuSrv);
-
 		pd3dCommandList->SetComputeRootDescriptorTable(1, mBlur1GpuUav);
 
 		UINT numGroupsX = (UINT)ceilf(mWidth / 256.0f);
@@ -276,16 +271,12 @@ void CBlurShader::Execute(ID3D12GraphicsCommandList* pd3dCommandList,
 
 		pd3dCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(mBlurMap0,
 			D3D12_RESOURCE_STATE_GENERIC_READ, D3D12_RESOURCE_STATE_UNORDERED_ACCESS));
-
 		pd3dCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(mBlurMap1,
 			D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_GENERIC_READ));
 
 		//세로
-
 		pd3dCommandList->SetPipelineState(m_pvertPipelineState);
-
 		pd3dCommandList->SetComputeRootDescriptorTable(0, mBlur1GpuUav);
-
 		pd3dCommandList->SetComputeRootDescriptorTable(1, mBlur0GpuSrv);
 
 		UINT numGroupsY = (UINT)ceilf(mHeight / 256.0f);
@@ -293,23 +284,19 @@ void CBlurShader::Execute(ID3D12GraphicsCommandList* pd3dCommandList,
 
 		pd3dCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(mBlurMap0,
 			D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_GENERIC_READ));
-
 		pd3dCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(mBlurMap1,
 			D3D12_RESOURCE_STATE_GENERIC_READ, D3D12_RESOURCE_STATE_UNORDERED_ACCESS));
 	}
 
 	pd3dCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(input,
 		D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_STATE_COPY_DEST));
-
 	pd3dCommandList->CopyResource(input, mBlurMap0);
 
 	// Transition to PRESENT state.
 	pd3dCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(input,
 		D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_RENDER_TARGET));
-
 	pd3dCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(mBlurMap0,
 		D3D12_RESOURCE_STATE_GENERIC_READ, D3D12_RESOURCE_STATE_COMMON));
-
 	pd3dCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(mBlurMap1,
 		D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_COMMON));
 }

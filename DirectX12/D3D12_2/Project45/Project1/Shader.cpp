@@ -390,7 +390,7 @@ D3D12_RASTERIZER_DESC CDepthRenderShader::CreateRasterizerState()
 	d3dRasterizerDesc.FrontCounterClockwise = FALSE;
 
 	//그림자 맵 해상도가 높아서 안깨짐
-	d3dRasterizerDesc.DepthBias = 1.f;
+	d3dRasterizerDesc.DepthBias = 1;
 	d3dRasterizerDesc.DepthBiasClamp = 1.0f;
 	d3dRasterizerDesc.SlopeScaledDepthBias = 10.0f;
 	d3dRasterizerDesc.DepthClipEnable = TRUE;
@@ -415,7 +415,9 @@ void CDepthRenderShader::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCo
 	m_pDepthTexture = new CTexture(MAX_DEPTH_TEXTURES, RESOURCE_TEXTURE2D_ARRAY, 0, 1);
 
 	D3D12_CLEAR_VALUE d3dClearValue = { DXGI_FORMAT_R32_FLOAT, { 1.0f, 1.0f, 1.0f, 1.0f } };
-	for (UINT i = 0; i < MAX_DEPTH_TEXTURES; i++) m_pDepthTexture->CreateTexture(pd3dDevice, _DEPTH_BUFFER_WIDTH, _DEPTH_BUFFER_HEIGHT, DXGI_FORMAT_R32_FLOAT, D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET, D3D12_RESOURCE_STATE_COMMON, &d3dClearValue, RESOURCE_TEXTURE2D, i);
+
+	for (UINT i = 0; i < MAX_DEPTH_TEXTURES; i++) 
+		m_pDepthTexture->CreateTexture(pd3dDevice, _DEPTH_BUFFER_WIDTH, _DEPTH_BUFFER_HEIGHT, DXGI_FORMAT_R32_FLOAT, D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET, D3D12_RESOURCE_STATE_COMMON, &d3dClearValue, RESOURCE_TEXTURE2D, i);
 
 	D3D12_RENDER_TARGET_VIEW_DESC d3dRenderTargetViewDesc;
 	d3dRenderTargetViewDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
@@ -550,8 +552,6 @@ void CDepthRenderShader::PrepareShadowMap(ID3D12GraphicsCommandList* pd3dCommand
 			{
 				float fWidth = _PLANE_WIDTH, fHeight = _PLANE_HEIGHT;
 				xmmtxProjection = XMMatrixOrthographicLH(fWidth, fHeight, fNearPlaneDistance, fFarPlaneDistance);
-				//float fLeft = -(_PLANE_WIDTH * 0.5f), fRight = +(_PLANE_WIDTH * 0.5f), fTop = +(_PLANE_HEIGHT * 0.5f), fBottom = -(_PLANE_HEIGHT * 0.5f);
-				//xmmtxProjection = XMMatrixOrthographicOffCenterLH(fLeft * 6.0f, fRight * 6.0f, fBottom * 6.0f, fTop * 6.0f, fBack, fFront);
 			}
 			else if (m_pLights[j].m_nType == SPOT_LIGHT)
 			{
@@ -559,10 +559,7 @@ void CDepthRenderShader::PrepareShadowMap(ID3D12GraphicsCommandList* pd3dCommand
 				float fAspectRatio = float(_DEPTH_BUFFER_WIDTH) / float(_DEPTH_BUFFER_HEIGHT);
 				xmmtxProjection = XMMatrixPerspectiveFovLH(XMConvertToRadians(fFovAngle), fAspectRatio, fNearPlaneDistance, fFarPlaneDistance);
 			}
-			//else if (m_pLights[j].m_nType == POINT_LIGHT)
-			{
-				//ShadowMap[6]이렇게 있어야 상하좌우앞뒤 모두 그림자 맵을 만들 수 있다.
-			}
+
 
 			m_ppDepthRenderCameras[j]->SetPosition(xmf3Position);
 			XMStoreFloat4x4(&m_ppDepthRenderCameras[j]->m_xmf4x4View, xmmtxView);
@@ -2017,7 +2014,7 @@ void CGSParticleShader::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCame
 	D3D12_STREAM_OUTPUT_BUFFER_VIEW SOBUFVIEW = pParticlebuf->m_d3dStreamBufferView;
 
 	pd3dCommandList->SOSetTargets(0, 1, &SOBUFVIEW);
-	pd3dCommandList->DrawInstanced((*pParticlebuf->m_pnReadBackBufferFilledSize) / stride, 1, 0, 0);
+	pd3dCommandList->DrawInstanced(static_cast<UINT>((*pParticlebuf->m_pnReadBackBufferFilledSize) / stride), 1, 0, 0);
 	//카운터에 갯수를 적었을것
 	pd3dCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(pParticlebuf->m_pd3dBufferFilledSize, D3D12_RESOURCE_STATE_STREAM_OUT, D3D12_RESOURCE_STATE_COPY_SOURCE));
 	pd3dCommandList->CopyResource(pParticlebuf->m_pd3dReadBackBufferFilledSize, pParticlebuf->m_pd3dBufferFilledSize);
@@ -2040,7 +2037,6 @@ void CGSParticleShader::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCame
 		pd3dCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(Draw, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER));
 	}
 
-
 	//만든 뷰를 이용해 다시 입력조립단계에 묶는다. SOSetTarget이 IA단계에 streamout버퍼를 묶어 준다 가정
 
 	if (m_ppd3dPipelineStates)pd3dCommandList->SetPipelineState(m_ppd3dPipelineStates[1]);
@@ -2049,7 +2045,7 @@ void CGSParticleShader::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCame
 
 	pd3dCommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_POINTLIST);
 	pd3dCommandList->IASetVertexBuffers(0, 1, &v);
-	pd3dCommandList->DrawInstanced((*pParticlebuf->m_pnReadBackBufferFilledSize) / stride, 1, 0, 0);
+	pd3dCommandList->DrawInstanced(static_cast<UINT>((*pParticlebuf->m_pnReadBackBufferFilledSize) / stride), 1, 0, 0);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -357,6 +357,7 @@ void CGameObject::Rotate(XMFLOAT4* pxmf4Quaternion)
 	UpdateTransform(NULL);
 }
 
+// 확인필요
 void CGameObject::OnObjectUpdateCallback() {
 	XMFLOAT3 xmf3ObjectPosition = GetPosition();
 	CHeightMapTerrain* pTerrain = (CHeightMapTerrain*)m_pObjectUpdatedContext;
@@ -906,39 +907,30 @@ void CMissileObject::Animate(float fTimeElapsed, XMFLOAT4X4* pxmf4x4Parent) {
 
 	float fHeight = pTerrain->GetHeight(xmf3Position.x, xmf3Position.z) + 50.0f;
 
-	if (xmf3Position.y < fHeight) {
-		XMFLOAT3 xmf3Normal = pTerrain->GetNormal(xmf3Position.x, xmf3Position.z);
 
+	if (m_pTarget) {
+
+		XMFLOAT3 xmf3Target = m_pTarget->GetPosition();
+		XMFLOAT3 xmf3ToTarget = Vector3::Subtract(xmf3Target, xmf3Position);
 		XMFLOAT3 xmf3Look = GetLook();
 
-		XMFLOAT3 xmf3CrossProduct = Vector3::CrossProduct(xmf3Look, xmf3Normal);
+		xmf3ToTarget = Vector3::Normalize(xmf3ToTarget);
+
+		XMFLOAT3 xmf3CrossProduct = Vector3::CrossProduct(xmf3Look, xmf3ToTarget);
+
 
 		xmf3CrossProduct.x *= (xmf3Look.z > 0.0f) ? 1.0f : -1.0f;
 
+		//각 x,y,z 값 만큼 pitch, yaw, roll 회전
 		Rotate(xmf3CrossProduct.x, xmf3CrossProduct.y, xmf3CrossProduct.z);
 		MoveForward(fDistance);
+
 	}
 	else {
-		if (m_pTarget) {
-
-			XMFLOAT3 xmf3Target = m_pTarget->GetPosition();
-			XMFLOAT3 xmf3ToTarget = Vector3::Subtract(xmf3Target, xmf3Position);
-
-			XMFLOAT3 xmf3Look = GetLook();
-			xmf3ToTarget = Vector3::Normalize(xmf3ToTarget);
-			XMFLOAT3 xmf3CrossProduct = Vector3::CrossProduct(xmf3Look, xmf3ToTarget);
-
-			xmf3CrossProduct.x *= (xmf3Look.z > 0.0f) ? 1.0f : -1.0f;
-
-			Rotate(xmf3CrossProduct.x, xmf3CrossProduct.y, xmf3CrossProduct.z);
-
-			MoveForward(fDistance);
-
-		}
-		else {
-			MoveForward(fDistance);
-		}
+		MoveForward(fDistance);
 	}
+
+
 	m_fElapsedTimes += fTimeElapsed;
 	if (m_fElapsedTimes > m_fDuration)
 	{
@@ -1153,7 +1145,7 @@ void CExplosiveObject::Animate(float fElapsedTime, XMFLOAT4X4* xmf3x3Parent)
 		if (!Targeton)
 			CGameObject::Animate(fElapsedTime, xmf3x3Parent);
 		for (int i = 0; i < nMissiles; i++) if (m_ppMissiles[i]->m_bActive) m_ppMissiles[i]->Animate(fElapsedTime, xmf3x3Parent);
-	
+
 
 	}
 }
@@ -1187,33 +1179,24 @@ void CExplosiveObject::findPlayer(CGameObject* pPlayer, float fElapsedTime)
 	XMFLOAT3 xmf3Target = pPlayer->GetPosition();
 	XMFLOAT3 xmf3Mpos = GetPosition();
 	XMFLOAT3 xmf3ToTarget = Vector3::Subtract(xmf3Target, GetPosition());
-	//수정
+
 	if (Vector3::Length(xmf3ToTarget) < 500.f) {
 
+		XMFLOAT3 xmf3WorldUp{ 0.0f,1.0f,0.0f };
 
-		//XMFLOAT3 xmf3X{ 1.0f,0.0f,0.0f };
-		XMFLOAT3 xmf3Y{ 0.0f,1.0f,0.0f };
-		XMFLOAT3 xmf3Z{ 0.0f,0.0f,1.0f };
+		// 플레이어를 바라보는 행렬 생성
+		XMFLOAT4X4 xmf4x4View = Matrix4x4::LookAtLH(xmf3Mpos, xmf3Target, xmf3WorldUp);
 
-		xmf3ToTarget = Vector3::Normalize(xmf3ToTarget);
-
-		XMFLOAT4X4 xmf4x4View = Matrix4x4::LookAtLH(xmf3Mpos, xmf3Target, xmf3Y);
-
-		XMFLOAT3 xmf3Ri = Vector3::Normalize(XMFLOAT3(xmf4x4View._11, xmf4x4View._21, xmf4x4View._31));
-		XMFLOAT3 xmf3Up = Vector3::Normalize(XMFLOAT3(xmf4x4View._12, xmf4x4View._22, xmf4x4View._32));
-		XMFLOAT3 xmf3Lo = Vector3::Normalize(XMFLOAT3(xmf4x4View._13, xmf4x4View._23, xmf4x4View._33));
-
-
-		XMFLOAT4X4& mtx = m_xmf4x4Transform;
-		mtx._11 = xmf3Ri.x; mtx._12 = xmf3Ri.y; mtx._13 = xmf3Ri.z;
-		mtx._21 = xmf3Up.x; mtx._22 = xmf3Up.y; mtx._23 = xmf3Up.z;
-		mtx._31 = xmf3Lo.x; mtx._32 = xmf3Lo.y; mtx._33 = xmf3Lo.z;
-		mtx._41 = xmf3Mpos.x; mtx._42 = xmf3Mpos.y; mtx._43 = xmf3Mpos.z;
+		//XMMatrixLookAtLH의 결과는 행 우선 표기법을 사용한다.
+		//m_xmf4x4Transform는 열 우선 표기법을 사용하기 때문에 전치한 뒤 사용해야한다.
+		XMStoreFloat4x4(&m_xmf4x4Transform,DirectX::XMMatrixTranspose(DirectX::XMMatrixLookAtLH(XMLoadFloat3(&xmf3Mpos), XMLoadFloat3(&xmf3Target), XMLoadFloat3(&xmf3WorldUp))));
+		
+		m_xmf4x4Transform._41 = xmf3Mpos.x; m_xmf4x4Transform._42 = xmf3Mpos.y; m_xmf4x4Transform._43 = xmf3Mpos.z;
 
 		SetScale(2.f, 2.f, 2.f);
 
-		if (m_fMovingSpeed != 0.0f) MoveStrafe(m_fMovingSpeed * fElapsedTime);
 
+		if (m_fMovingSpeed != 0.0f) MoveStrafe(m_fMovingSpeed * fElapsedTime);
 		Targeton = true;
 		return;
 	}

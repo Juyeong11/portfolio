@@ -25,7 +25,7 @@ class CShader;
 struct CB_GAMEOBJECT_INFO
 {
 	XMFLOAT4X4						m_xmf4x4World;
-	UINT						fAnimationTimer;
+	float						fAnimationTimer;
 	//UINT							m_nMaterial;
 };
 
@@ -144,7 +144,7 @@ public:
 	D3D12_GPU_DESCRIPTOR_HANDLE		m_d3dCbvGPUDescriptorHandle;
 
 	BoundingOrientedBox			m_xmOOBB;
-	UINT							fAnimationTime = 0;
+	float							fAnimationTime = 0;
 
 	ID3D12Resource					*m_pd3dcbGameObject = NULL;
 protected:

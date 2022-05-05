@@ -701,10 +701,9 @@ void CExplosionObject::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamer
 	
 void CExplosionObject::Animate(float fTimeElapsed, CCamera* pCamera)
 {
-	static float f;
-	f+= fTimeElapsed * 10.f;
+
 	if (bBlowingUp) {
-		fAnimationTime += f;
+		fAnimationTime += fTimeElapsed*10.f;
 		XMFLOAT3 xmf3CameraPosition = pCamera->GetPosition();
 		SetLookAt(xmf3CameraPosition);
 		if (fAnimationTime >= 20) {
