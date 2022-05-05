@@ -9,9 +9,9 @@
 
 
 ### 개인 프로젝트
-#### DirectX12 프로젝트 https://github.com/Juyeong11/portfolio/tree/main/DirectX12/D3D12_1
-#### DirectX12 프로젝트 https://github.com/Juyeong11/portfolio/tree/main/DirectX12/D3D12_2
-#### 게임 서버 프로그래밍 프로젝트 https://github.com/Juyeong11/portfolio/tree/main/IOCP
+> #### DirectX12 프로젝트 https://github.com/Juyeong11/portfolio/tree/main/DirectX12/D3D12_1
+> #### DirectX12 프로젝트 https://github.com/Juyeong11/portfolio/tree/main/DirectX12/D3D12_2
+> #### 게임 서버 프로그래밍 프로젝트 https://github.com/Juyeong11/portfolio/tree/main/IOCP
 
 
 ### 팀 프로젝트
