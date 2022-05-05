@@ -6,7 +6,9 @@
 # 링크
 #### 군대에서 공부했던 기록1 https://github.com/Juyeong11/algorithm-study
 #### 군대에서 공부했던 기록2 https://github.com/Juyeong11/programing-study
-
+#### DirectX12 프로젝트 https://github.com/Juyeong11/portfolio/tree/main/DirectX12/D3D12_1
+#### DirectX12 프로젝트 https://github.com/Juyeong11/portfolio/tree/main/DirectX12/D3D12_2
+#### 게임 서버 프로그래밍 프로젝트 https://github.com/Juyeong11/portfolio/tree/main/IOCP
 #### 네트워크 게임 프로그래밍 팀프로젝트 https://github.com/Juyeong11/agari_Network
   - 서버 코드를 담당하였습니다.
 #### 졸업작품(진행중) https://github.com/Juyeong11/Graduation_project
