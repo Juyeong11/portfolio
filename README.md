@@ -12,4 +12,5 @@
 #### 네트워크 게임 프로그래밍 팀프로젝트 https://github.com/Juyeong11/agari_Network
   - 서버 코드를 담당하였습니다.
 #### 졸업작품(진행중) https://github.com/Juyeong11/Graduation_project
-  - IOCP를 이용한 C++서버와 유니티 엔진을 이용한 클라이언트 개발 중 일부분(이펙트 출력)을 담당하고 있습니다.
+  - IOCP를 이용한 C++서버와 유니티 엔진을 이용한 게임을 개발하고 있습니다.
+  - 서버 제작을 담당하고 있습니다.
