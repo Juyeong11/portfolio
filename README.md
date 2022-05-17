@@ -1,5 +1,6 @@
+# 알고리즘(백준)
 [![Solved.ac
-프로필](http://mazassumnida.wtf/api/generate_badge?boj={skawndud321})](https://solved.ac/{skawndud321})
+프로필](http://mazassumnida.wtf/api/generate_badge?boj=skawndud321)](https://solved.ac/profile/skawndud321)
 # portfolio
 진행했던 프로젝트, 공부 기록 링크입니다.
 <br>
