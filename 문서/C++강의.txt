@@ -1,0 +1,136 @@
+unique_ptr을 만들어 보자
+
+EBCO를 이용한 compress_pair를 이용해 공간을 차지하지 않는 Deleter를 지정하자
+	-> 함수의 경우 함수 포인터를 이용해 해당 함수로 갈텐데 이건 별도의 공간을 차지하지 않는건가? -> 아마 코드 영역 이런곳에 저장되었다가 쓰나보다
+
+unique_ptr은 복사는 막아도 이동은 가능해야한다. -> 암시적 형변환이 가능한 타입끼리는 변환되어야함
+	템플릿 버전의 move생성자
+		-> 암시적 변환이 가능한지 확인하는 문법으로 해야하는거 아닌가?
+		-> 지금처럼 만들면 다른 타입이 들어와도 형변환이 되는게 아닌지...
+	템플릿 버전의 deleter 생성자
+	
+
+T[] -> T에 int[]가 넘어가면 T[]는 int[]로 추론된다. 
+
+Tag dispatching
+	-> empty class를 이용해 함수 오버로딩을 하는 기술
+	-> if문을 사용해 구분짓지 않을 수 있어 컴파일러 최적화에 유리하다.
+
+
+vector를 만들어 봅시다.
+Generic Container idioms
+	template기반 컨테이너를 설계할 때는 type T가 가져야하는 요구 조건을 최소화 하자
+	buff = new T[size]; -> T에 기본 생성자가 요구된다. operator new를 사용하자
+	
+	Placement new -> 이미 할당된 메모리에 생성자만 호출하는 기술 -> new(주소) T(argument...)
+	
+	STL 컨테이너에 저장되는 타입은 복사 생성이 가능해야 한다.
+	
+	operator delete(T) 
+		-> 소멸자를 호출해아할 텐데 소멸자의 인자를 넘겨줘야하는 경우는 어떻게 하지? -> 소멸자가 필요 없다. 그냥 free를 하기 때문 -> 소멸자는 명시적으로 호출해줘야 한다.
+	
+std::allocator
+	메모리 할당관련 함수를 추상화한 도구
+	직접 opreator new, delete를 사용하지 말고 템플릿 인자에 allocator를 넘겨 사용도록 만들자 -> 확장성이 좋다.
+	생성자와 소멸자는 호출해주지 않는다.
+
+	C++20 부터는 construct/destory의 기본 버전은 allocator_traits에 정의되어 있으니 이걸 사용하자 -> 왜 이런짓을??
+	
+클래스에 필요한 정책을 템플릿 인자로 넘겨 사용하도록 하는것 -> policy base design
+	이것을 STL에서 사용하기 위해서는 디폴트 생성자,템플릿 생성자, value_type 멤버, ==연산과 !=연산이 가능해야 한다.
+	
+
+vector<bool>의 경우 100bit를 할당해 사용하게된다. 이것은 어떻게 구현되는 것일까?
+부분 특수화를 이용해 bool에 대한 vector를 만들고 메모리 할당
+allocator<bool>를 사용해 100bit를 어떻게 할당할까?
+allocator에 rebind라는 클래스가 있다. -> C++20 이전까지 사용가능
+ typename allocator_traits<T>::template rebind_alloc<int>  -> C++20 
+	
+rebind
+	타입이 변경된 allocator를 얻는 기술
+	
+temporary proxy
+	임시 객체를 사용해 대행자를 만드는 기술
+	위의 vector<bool>를 비트단위로 관리하기 위해 int buff를 만들었다. 
+	이것을 접근하여 bool로 타입 변환해주는 객체를 만들어 이것으로 비트 단위 연산을 가능하게 해준다.
+	임시 객체이기 때문에 auto&로는 받을 수 없다.
+	
+	
+Reference counting
+	객체를 생성하는 것은 쉽지만 객체를 파괴하는 것은 어렵다.
+	
+	참조 카운팅을 사용하는 객체의 경우 소멸자를 아무곳에서나 호출할 수 있게 되면 참조 카운팅과 무관하게 삭제 될 위험이 있다
+	protected에 두어 호출되는 곳을 멤버 함수로 정해주자 -> 지역 객체도 만들 수 없게 된다. -> 객체를 힙에만 생성이 가능해진다.
+	
+	기반 클래스가 파생 클래스의 타입을 알아내는 방법? -> template 클래스로 만들어 class Truck : public RefCount<Truck> 이런식으로 해 전달해주자 -> CRTP
+	-> RefCount를 상속받는 클래스 계수만큼 비슷한 ReCount 가 생긴다 
+	-> 템플릿 인자에 의존적인 멤버와 아닌 멤버를 분리해 기반클래스, 파생클래스로 만들어 생성되는 코드를 줄이자.(template hoisting)
+	
+	상수 변수도 참조 계수는 관리해야한다. -> 어떻게서 비 상수 멤버인 addRef를 호출할까? -> int refcnt를 mutable로 생성한다. -> CRTP를 사용한 release에서 문제가 생긴다. -> this가 const 이기 때문에 static_cast가 불가능하다.
+	
+	++atomic::i -> refcnt.fetch_add(1, std::memory_order_seq_cst) -> std::memory_order_relaxed 무슨 명령어일까 -> 병렬 프로그래밍 강의 참조
+	
+	std::shared_ptr
+		참조계수를 관리하는 객체가 힙에 따로 할당된다. 객체안에 참조계수를 포함되지 않기 때문에 아래와 같은 문제가 발생할 수 있다. -> make_shared를 찾아보자
+		
+		T* p = new T
+		std::shared_ptr<T> sp1(p);
+		std::shared_ptr<T> sp2(p);
+		
+		이렇게 사용할 경우 p에 대한 관리객체가 2개가 되면서 p를 두 번 삭제하는 문제가 발생한다.
+		
+advance
+	반복자를 n만큼 이동하는 알고리즘 iter 형식에 따라 알맞은 증가 방식을 사용해준다. 어떻게 반복자 형식에 따라 알맞은 함수를 호출해줄까?
+	
+	c++98에서는 empty class를 이용한 tag_dispatching 사용
+		std::random_access_iterator_tag
+	
+	C++11 std::enable_if_t, std::is_same_v를 사용해 T에 따른 함수 템플릿 사용여부를 결정해준다. -> 반환값 자리에 std::enable_if_t가 들어감
+		 std::enable_if_t<
+				std::is_same_v< std::random_access_iterator_tag, typename std::iterator_traits<T>::iterator_category>
+				, void> advance{...}
+	
+	C++17 if문과 std::is_same<>::value 를 사용해 부분 특수화 없이 advance하나로 random_access와 input_access를 모두 처리할 수 있음 -> constexpr이 도입되면서 컴파일 타임에 if문을 처리할 수 있기 때문
+	
+	C++20 requires( concept )을 사용 -> c++11과 유사하지만 코드가 간결해짐
+		template<typename T> requires std::random_access_iterator<T>
+		void advance(T& it, size_t sz){...}
+		
+
+Base From Member
+	파생클래스의 멤버 변수를 기반클래스 생성자의 인자로 호출하면 생성자 호출 순서에 의해 초기화되지 않은 멤버 변수를 사용하게된다.
+		-> 해당 멤버 변수를 다른 클래스로 만들어 다중 상속 구조를 만들어보자
+		-> 그냥 생성자 호출 순서를 이용한 방법
+		
+		
+is_transparent
+	set을 만들때 비교함수에서 하나의 멤버 변수만 사용한다면 \ find를 사용할 때 굳이 모든 멤버를 넘겨 줄 필요가 없다. 
+	\ 비교 함수 안에 using is_trnsparent = int를 넣어줘 멤버 변수 하나로 find를 사용하겠다고 알려주자
+		상세 구현은 어떤 식으로 되어 있을까?
+		
+Coercion by member template
+	U*가 T*에 복사가 가능하다면 SmartPtr도 동일하게 동작하여야 한다.
+		-> 템플릿 생성자와 friend를 사용해 해결해보자
+			-> 그렇다면 상속관계에 있는 포인터뿐만 아니라 모든 포인터에 대한 생성자를 만들 수 있는 것이 아닌가?
+				-> 만들 수 있지만 T* = U* 동작에서 에러가 나온다.
+			-> enable_if와 is_convertible를 사용하면 상속관계에 있는 포인터인지 확인 가능하고, 더 직관적인 에러 메시지를 출력할 수 있따.
+			
+ranges-for
+	ranges-for에서 컨테이너의 일부만 꺼낼 방법이 있을까?
+		-> 컨테이너의 검사할 부분을 begin end로 반환하는 객체를 만들면 할 수 있다. -> take_view -> 사용자가 생성한 view는 std::ranges::view_base 를 상속받아야한다.
+	그렇다면 이렇게 만든 객체를 중첩해서 사용하는 방법은?(컨테이너에서 3개만 출력해주는 객체와 반대로 출력하게 해주는 객체) -> 3개를 반대로 출력한다.
+	
+	참조끼리 대입하면 어떤 일이 발생할까? -> C++에서 참조는 한번 초기화 되면 이동할 수 없다 즉 대입연산 시 참조의 이동이 아니라 가르키던 객체 자체가 대입된다.
+	하지만 std::ranges::ref_view는 이동 가능한 참조로 대입 연산시 참조 자체가 이동한다.
+		-> 내부적으로 포인터를 사용한 것임
+	
+	클래스에 참조가 있다면 컴파일러가 대입연산자를 만들지 않는다.
+	
+	take_view 끼리 대입을 한다면 어떻게 동작하는 것이 좋을까? -> 내부의 참조값을 변경시키지 말고 그냥 가르키는 곳 만 변경되면 좋겠다 -> ref_view를 사용
+	하지만 ref_view를 사용하면 임시객체를 이용한 생성이 불가능해진다. -> 포인터는 임시객체를 가리킬수 없기 때문
+		C++20에서 생긴 all이라는 것을 이용해 타입별로 다른 반환 값을 줘 다르게 생성하자
+		
+	어떤 T를 사용할 지 정해줄 수 있다.... 
+	
+	기반클래스에서 파생클래스의 이름을 할 수 있다. 상속 시 T에 넘겨주면됨 -> CRTP
+	

@@ -1,0 +1,8 @@
+Light.hlsl(143,2): warning X4000: use of potentially uninitialized variable (PointLight)
+Light.hlsl(183,2): warning X4000: use of potentially uninitialized variable (SpotLight)
+Light.hlsl(143,2): warning X4000: use of potentially uninitialized variable (PointLight)
+Light.hlsl(183,2): warning X4000: use of potentially uninitialized variable (SpotLight)
+Light.hlsl(143,2): warning X4000: use of potentially uninitialized variable (PointLight)
+Light.hlsl(183,2): warning X4000: use of potentially uninitialized variable (SpotLight)
+Light.hlsl(143,2): warning X4000: use of potentially uninitialized variable (PointLight)
+Light.hlsl(183,2): warning X4000: use of potentially uninitialized variable (SpotLight)
